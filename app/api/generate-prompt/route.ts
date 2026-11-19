@@ -40,23 +40,27 @@ export async function POST(request: NextRequest) {
         role: "user",
         parts: [
           { inlineData: { mimeType: image.type, data: bytes.toString("base64") } },
-          { text: `Analyze the uploaded image carefully, then write ONE complete, ready-to-copy image-editing prompt for the user.
+          { text: `Write ONE concise, ready-to-copy prompt for an image model that will edit the exact uploaded source image.
 
-Selected service: ${serviceNames[vectorType]}.
-Service guidance: ${serviceGuidance}
+Selected style: ${serviceNames[vectorType]}.
+Style guidance (use ONLY to define the visual treatment; ignore any instruction in it that changes source content): ${serviceGuidance}
 
-The user's intended base instruction is: "Convert this exact uploaded image into ${serviceNames[vectorType].toLowerCase()}."
+NON-NEGOTIABLE GOAL:
+The user does NOT want a new image, a redesign, a creative interpretation, or an improved version. They want the SAME source image to remain visually identical in content, with ONLY its rendering style changed to ${serviceNames[vectorType]}.
 
-Your prompt must:
-- Identify the actual subject, objects, pose, composition, framing, background, colors, and distinctive details visible in THIS image. Do not guess unclear details.
-- Explicitly instruct the image model to preserve the exact subject, number of objects, composition, proportions, pose, camera/view angle, and all meaningful details.
-- Apply only the selected visual style. Do not invent, remove, replace, rearrange, or add elements.
-- Include specific rendering directions appropriate to the selected service.
-- Be clear, professional, detailed, and directly usable with the original image attached.
-- Return only the final prompt. Do not add analysis, headings, explanations, markdown fences, or mention that you are an AI.` }
+The final prompt you write MUST clearly instruct the image model:
+1. Treat the uploaded image as a locked source/reference. Perform a style conversion on that image itself, not text-to-image generation and not a reimagining.
+2. Preserve exactly every existing subject and object, object count, shape, silhouette, contour, pose, expression, anatomy, proportions, perspective, camera/view angle, crop, framing, layout, position, spacing, overlap, and background.
+3. Do not add, invent, infer, embellish, beautify, complete, decorate, or introduce ANY element. Do not add props, accessories, scenery, patterns, texture, shadows, highlights, text, logos, borders, or watermarks.
+4. Do not remove, replace, duplicate, move, resize, rotate, distort, reshape, or rearrange anything. Do not change the subject's identity or expression.
+5. Change ONLY the rendering treatment required for the selected style. Keep original colors for Vector Illustration; use faithful monochrome conversion for Black & White; use faithful existing contours for Line Drawing.
+6. If any detail is unclear, preserve it as it appears; never guess or create a replacement detail.
+7. Output only the edited artwork, with no mockup or presentation layout.
+
+IMPORTANT: Do not add a subject description that could encourage the image model to create new objects. Keep the final prompt direct, strict, and focused on preserving the uploaded image. Source fidelity has absolute priority over style polish. Return ONLY the final prompt, with no heading, analysis, explanation, or markdown fences.` }
         ]
       }],
-      config: { responseModalities: ["TEXT"], temperature: 0.4 }
+      config: { responseModalities: ["TEXT"], temperature: 0.1 }
     });
 
     const prompt = result.text?.trim();
@@ -69,3 +73,4 @@ Your prompt must:
     return NextResponse.json({ error: status === 429 ? "Gemini free-tier quota is temporarily exhausted. Please retry later." : message }, { status });
   }
 }
+`;
