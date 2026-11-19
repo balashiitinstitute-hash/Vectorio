@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vectorify AI → Gemini",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sends your selected Vectorify image and prompt to Gemini so you only need to click Generate.",
   "permissions": [
     "storage",
