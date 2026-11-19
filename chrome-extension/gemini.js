@@ -74,51 +74,9 @@ async function fillGemini() {
       editor.textContent = payload.prompt;
       editor.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: payload.prompt }));
     }
-    // Wait for Gemini to render the uploaded image as an attachment.
-    // Only auto-submit when an image preview is visibly present, to avoid sending a text-only request.
-    let imageAttached = false;
-    for (let attempt = 0; attempt < 40 && !imageAttached; attempt++) {
-      imageAttached = [...document.querySelectorAll("img")]
-        .some((img) => {
-          const src = img.getAttribute("src") || "";
-          return (src.startsWith("blob:") || src.startsWith("data:image/"))
-            && img.complete && img.naturalWidth > 20;
-        })
-        || !!document.querySelector(
-          '[data-test-id*="attachment"], [data-testid*="attachment"], [aria-label*="Remove attachment"], [aria-label*="Remove image"]'
-        );
-      if (!imageAttached) await wait(500);
-    }
-
-    if (!imageAttached) {
-      showNotice("Image upload could not be confirmed. Your prompt is filled, but Gemini was NOT submitted automatically. Please check the image attachment and click Generate manually.");
-      return;
-    }
-
-    // Wait for Gemini's Send/Generate control to become enabled, then submit once.
-    let sendButton = null;
-    for (let attempt = 0; attempt < 30 && !sendButton; attempt++) {
-      sendButton = [...document.querySelectorAll("button,[role='button']")]
-        .find((el) => {
-          const label = (el.getAttribute("aria-label") || "") + " "
-            + (el.getAttribute("data-testid") || "") + " "
-            + (el.getAttribute("data-test-id") || "") + " "
-            + (el.innerText || "");
-          return /send message|send prompt|^send$|^generate$|run prompt/i.test(label.trim())
-            && !el.disabled
-            && el.getAttribute("aria-disabled") !== "true";
-        });
-      if (!sendButton) await wait(500);
-    }
-
-    if (!sendButton) {
-      showNotice("Image and prompt appear ready, but Gemini's Generate button was not detected. Please click Generate manually.");
-      return;
-    }
-
-    await wait(700);
-    sendButton.click();
+    // Leave final submission to the user. Gemini's UI may change, so never auto-click Generate.
     await chrome.storage.local.remove("vectorifyPending");
+    showNotice("Your image and prompt have been sent to Gemini. Please review them and click Generate when ready.");
   } catch (error) {
     console.error("Vectorify → Gemini:", error);
     showNotice("Vectorify could not automatically attach the image. Please use Gemini's Upload & tools → Upload files, then check the prompt. " + (error?.message || ""));
