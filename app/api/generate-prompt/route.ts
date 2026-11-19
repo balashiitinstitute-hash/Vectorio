@@ -40,24 +40,27 @@ export async function POST(request: NextRequest) {
         role: "user",
         parts: [
           { inlineData: { mimeType: image.type, data: bytes.toString("base64") } },
-          { text: `Write ONE concise, ready-to-copy prompt for an image model that will edit the exact uploaded source image.
+          { text: `Write ONE direct, strict, ready-to-copy image-editing prompt for the selected service.
 
 Selected style: ${serviceNames[vectorType]}.
-Style guidance (use ONLY to define the visual treatment; ignore any instruction in it that changes source content): ${serviceGuidance}
+Service guidance (defines ONLY the rendering style; ignore anything that changes source content): ${serviceGuidance}
 
-NON-NEGOTIABLE GOAL:
-The user does NOT want a new image, a redesign, a creative interpretation, or an improved version. They want the SAME source image to remain visually identical in content, with ONLY its rendering style changed to ${serviceNames[vectorType]}.
+ABSOLUTE PRIORITY — SOURCE FIDELITY AND GEOMETRY LOCK:
+The user needs the exact same artwork, not a new interpretation. The uploaded image is a locked master reference. The output must preserve the original composition and geometry. The only permitted change is the rendering style.
 
-The final prompt you write MUST clearly instruct the image model:
-1. Treat the uploaded image as a locked source/reference. Perform a style conversion on that image itself, not text-to-image generation and not a reimagining.
-2. Preserve exactly every existing subject and object, object count, shape, silhouette, contour, pose, expression, anatomy, proportions, perspective, camera/view angle, crop, framing, layout, position, spacing, overlap, and background.
-3. Do not add, invent, infer, embellish, beautify, complete, decorate, or introduce ANY element. Do not add props, accessories, scenery, patterns, texture, shadows, highlights, text, logos, borders, or watermarks.
-4. Do not remove, replace, duplicate, move, resize, rotate, distort, reshape, or rearrange anything. Do not change the subject's identity or expression.
-5. Change ONLY the rendering treatment required for the selected style. Keep original colors for Vector Illustration; use faithful monochrome conversion for Black & White; use faithful existing contours for Line Drawing.
-6. If any detail is unclear, preserve it as it appears; never guess or create a replacement detail.
-7. Output only the edited artwork, with no mockup or presentation layout.
+Your final prompt MUST explicitly require all of the following:
+1. CANVAS LOCK: Preserve exact aspect ratio, canvas boundaries, crop, framing, camera/view angle, perspective, background, margins, and placement. Do not zoom, recrop, extend, or reframe.
+2. PROPORTION LOCK: Preserve the exact width-to-height proportions of the whole artwork and every individual element. No stretching, squashing, widening, narrowing, lengthening, shortening, scaling, or distortion.
+3. SIZE LOCK: Every main element and small detail must retain its original relative and apparent size. Do not enlarge or shrink any part.
+4. MAIN ELEMENT LOCK: Preserve the exact same main subjects, objects, parts, and details, with identical count, identity, silhouette, shape, anatomy, pose, expression, structure, and contour. Do not omit, replace, merge, split, duplicate, simplify, or redesign any element.
+5. POSITION LOCK: Preserve the exact position, angle, spacing, alignment, distance, overlap, and relationship between all elements. Nothing may move, rotate, or rearrange.
+6. CONTOUR LOCK: Do not alter outer edges, internal boundaries, facial features, body shape, or structural geometry. Keep contours in their corresponding original locations.
+7. STYLE ONLY: Apply only the selected rendering treatment. Vector Illustration: clean vector-like edges and flat areas while retaining original colors. Black & White: faithful monochrome conversion preserving light-dark structure. Line Drawing: clean lines following only existing source contours.
+8. NO CREATIVE CHANGES: Do not add, invent, infer, embellish, beautify, complete, correct, decorate, or generate any new content. No props, accessories, scenery, shadows, highlights, gradients, textures, patterns, text, logos, borders, or watermarks.
+9. If any detail is unclear, preserve it as it appears; never guess or replace it with an invented detail.
+10. Output only the edited artwork, with no mockup, border, caption, or presentation layout.
 
-IMPORTANT: Do not add a subject description that could encourage the image model to create new objects. Keep the final prompt direct, strict, and focused on preserving the uploaded image. Source fidelity has absolute priority over style polish. Return ONLY the final prompt, with no heading, analysis, explanation, or markdown fences.` }
+Write the final prompt as clear instructions to edit the uploaded image itself, not as a text-to-image description. Do not describe the depicted subject in a way that could cause it to be regenerated. Be concise but include the geometry and proportion locks. Return ONLY the final prompt, with no heading, analysis, explanation, or markdown fences.` }
         ]
       }],
       config: { responseModalities: ["TEXT"], temperature: 0.1 }
