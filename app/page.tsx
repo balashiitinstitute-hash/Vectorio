@@ -18,7 +18,7 @@ export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [generating, setGenerating] = useState(false);\n  const [sendingToGemini, setSendingToGemini] = useState(false);\n  const [geminiStatus, setGeminiStatus] = useState("");
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
@@ -58,7 +58,7 @@ export default function Home() {
     }
   }
 
-  async function copyPrompt() {
+  async function openGeminiWithImage() {\n    if (!file || !prompt) return;\n    setSendingToGemini(true); setGeminiStatus(""); setError("");\n    try {\n      const imageDataUrl = await new Promise<string>((resolve, reject) => {\n        const reader = new FileReader();\n        reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read image."));\n        reader.onerror = () => reject(new Error("Could not read image."));\n        reader.readAsDataURL(file);\n      });\n      window.postMessage({ type: "VECTORIFY_SEND_TO_GEMINI", imageDataUrl, fileName: file.name, mimeType: file.type, prompt }, window.location.origin);\n      setGeminiStatus("Sending image and prompt to Gemini… If nothing happens, install and enable the Vectorify Chrome Extension.");\n    } catch (err) {\n      setError(err instanceof Error ? err.message : "Could not send to Gemini.");\n    } finally { setSendingToGemini(false); }\n  }\n\n  useEffect(() => {\n    const onExtensionMessage = (event: MessageEvent) => {\n      if (event.source !== window || event.origin !== window.location.origin) return;\n      if (event.data?.type === "VECTORIFY_EXTENSION_SENT") setGeminiStatus("Gemini opened. The extension is preparing your image and prompt.");\n      if (event.data?.type === "VECTORIFY_EXTENSION_ERROR") setError(event.data.error || "Chrome extension could not open Gemini.");\n    };\n    window.addEventListener("message", onExtensionMessage);\n    return () => window.removeEventListener("message", onExtensionMessage);\n  }, []);\n\n  async function copyPrompt() {
     try { await navigator.clipboard.writeText(prompt); setCopied(true); window.setTimeout(() => setCopied(false), 2000); }
     catch { setError("Clipboard access was blocked. Please select and copy the prompt manually."); }
   }
@@ -102,8 +102,8 @@ export default function Home() {
       {prompt && <section className="shell mt-6"><div className="panel p-5 md:p-7">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">03. Your image-specific prompt</h2><p className="muted mt-1 text-sm">Generated from your uploaded image and selected service.</p></div><span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">Prompt ready</span></div>
         <textarea readOnly value={prompt} className="min-h-[220px] w-full resize-y rounded-xl border border-[#e7e2f0] bg-[#faf9ff] p-4 text-sm leading-7 text-[#49465b] outline-none"/>
-        <div className="mt-4 flex flex-wrap gap-3"><button onClick={copyPrompt} className="primary flex items-center justify-center gap-2"><Clipboard size={16}/>{copied?"Copied!":"Copy prompt"}</button><a href="https://gemini.google.com/app" target="_blank" rel="noreferrer" className="secondary flex items-center justify-center gap-2">Open Gemini <ExternalLink size={16}/></a><button onClick={generatePrompt} disabled={generating} className="secondary flex items-center gap-2"><Sparkles size={16}/> Regenerate prompt</button></div>
-        <p className="muted mt-4 text-xs">Copy this prompt, upload your original image to Gemini, and ask Gemini to apply the requested style. Vectorify AI only creates prompts; it does not generate or import images.</p>
+        <div className="mt-4 flex flex-wrap gap-3"><button onClick={copyPrompt} className="primary flex items-center justify-center gap-2"><Clipboard size={16}/>{copied?"Copied!":"Copy prompt"}</button><button onClick={openGeminiWithImage} disabled={sendingToGemini} className="secondary flex items-center justify-center gap-2 disabled:opacity-50">{sendingToGemini ? <Loader2 size={16} className="animate-spin"/> : <ExternalLink size={16}/>} {sendingToGemini ? "Opening Gemini…" : "Open Gemini with image + prompt"}</button><button onClick={generatePrompt} disabled={generating} className="secondary flex items-center gap-2"><Sparkles size={16}/> Regenerate prompt</button></div>
+        {geminiStatus && <p className="mt-4 rounded-xl bg-[#f2efff] p-3 text-sm text-[#5e4bb0]">{geminiStatus}</p>}\n        <p className="muted mt-4 text-xs">With the optional Vectorify Chrome Extension installed, this sends your original image and prompt to Gemini. You still review the setup and click Generate yourself.</p>
       </div></section>}
 
       <footer className="shell mt-16 border-t border-[#eceaf3] pt-6 text-center text-xs text-[#9290a0]">Vectorify AI · Image-aware prompt generator · PNG/JPG/WEBP input · No generated-result import.</footer>
