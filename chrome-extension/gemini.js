@@ -13,16 +13,39 @@ async function fillGemini() {
     if (!payload?.imageDataUrl || !payload?.prompt) return;
 
     const response = await fetch(payload.imageDataUrl);
+    if (!response.ok) throw new Error("Could not read the selected image.");
     const blob = await response.blob();
-    const file = new File([blob], payload.fileName || "vectorify-source.png", { type: payload.mimeType || blob.type || "image/png" });
+    const file = new File([blob], payload.fileName || "vectorify-source.png", {
+      type: payload.mimeType || blob.type || "image/png"
+    });
 
-    // Gemini exposes a file input when its upload control is available.
-    let fileInput = null;
-    for (let attempt = 0; attempt < 20 && !fileInput; attempt++) {
-      fileInput = document.querySelector('input[type="file"]');
-      if (!fileInput) await wait(500);
+    // Gemini does not create its file input until the upload menu is opened.
+    let fileInput = document.querySelector('input[type="file"]');
+    if (!fileInput) {
+      const uploadButton = [...document.querySelectorAll("button,[role='button']")]
+        .find((el) => /upload\s*&\s*tools|attach files|add files/i.test(
+          (el.getAttribute("aria-label") || "") + " " + (el.innerText || "")
+        ));
+      if (!uploadButton) throw new Error('Gemini "Upload & tools" button was not found.');
+      uploadButton.click();
+      await wait(500);
+
+      const uploadOption = [...document.querySelectorAll("button,[role='button'],[role='menuitem']")]
+        .find((el) => /^(upload files?|from computer|upload from computer)$/i.test(
+          (el.innerText || el.getAttribute("aria-label") || "").trim()
+        ));
+      if (uploadOption) {
+        uploadOption.click();
+        await wait(500);
+      }
     }
-    if (!fileInput) throw new Error("Gemini upload control was not found. Please attach the image manually.");
+
+    // Wait for the native file input to be added after opening the upload menu.
+    for (let attempt = 0; attempt < 30 && !fileInput; attempt++) {
+      fileInput = document.querySelector('input[type="file"]');
+      if (!fileInput) await wait(400);
+    }
+    if (!fileInput) throw new Error('Gemini did not open its image file picker. Please use "Upload & tools" → "Upload files" once.');
 
     const transfer = new DataTransfer();
     transfer.items.add(file);
@@ -30,8 +53,8 @@ async function fillGemini() {
     fileInput.dispatchEvent(new Event("input", { bubbles: true }));
     fileInput.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Wait for Gemini to accept the image before placing the prompt.
-    await wait(1800);
+    // Wait until Gemini displays the uploaded attachment before filling the prompt.
+    await wait(2500);
     let editor = null;
     for (let attempt = 0; attempt < 24 && !editor; attempt++) {
       editor = document.querySelector('rich-textarea [contenteditable="true"]')
@@ -54,7 +77,7 @@ async function fillGemini() {
     await chrome.storage.local.remove("vectorifyPending");
   } catch (error) {
     console.error("Vectorify → Gemini:", error);
-    showNotice("Vectorify could not automatically finish setup. Please attach the source image and paste your prompt manually. " + (error?.message || ""));
+    showNotice("Vectorify could not automatically attach the image. Please use Gemini's Upload & tools → Upload files, then check the prompt. " + (error?.message || ""));
   } finally {
     filling = false;
   }
@@ -65,7 +88,12 @@ function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 function showNotice(message) {
   const notice = document.createElement("div");
   notice.textContent = message;
-  Object.assign(notice.style, { position: "fixed", zIndex: "999999", top: "12px", left: "12px", right: "12px", padding: "14px 18px", background: "#fff4d6", color: "#4b3710", border: "1px solid #e7c66a", borderRadius: "12px", font: "14px/1.5 Arial,sans-serif", boxShadow: "0 4px 18px #0002" });
+  Object.assign(notice.style, {
+    position: "fixed", zIndex: "999999", top: "12px", left: "12px", right: "12px",
+    padding: "14px 18px", background: "#fff4d6", color: "#4b3710",
+    border: "1px solid #e7c66a", borderRadius: "12px",
+    font: "14px/1.5 Arial,sans-serif", boxShadow: "0 4px 18px #0002"
+  });
   document.body.appendChild(notice);
   setTimeout(() => notice.remove(), 12000);
 }
