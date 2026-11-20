@@ -1,6 +1,6 @@
-// Receives the selected image and generated prompt from the Vectorify web app.
+// Receives the selected image and generated prompt from the Vectorio AI web app.
 window.addEventListener("message", (event) => {
-  if (event.source !== window || event.origin !== "https://vectorify-ai.vercel.app") return;
+  if (event.source !== window || !["https://vectorio-ai.vercel.app", "https://vectorify-ai.vercel.app"].includes(event.origin)) return;
   if (event.data?.type !== "VECTORIFY_SEND_TO_GEMINI") return;
   const payload = event.data;
   if (typeof payload.imageDataUrl !== "string" || typeof payload.prompt !== "string") return;
