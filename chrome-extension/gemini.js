@@ -1,21 +1,21 @@
 let filling = false;
 
 chrome.runtime.onMessage.addListener((message) => {
-  if (message?.type === "VECTORIFY_FILL_GEMINI") fillGemini();
+  if (message?.type === "VECTORIO_FILL_GEMINI") fillGemini();
 });
 
 async function fillGemini() {
   if (filling) return;
   filling = true;
   try {
-    const stored = await chrome.storage.local.get("vectorifyPending");
-    const payload = stored.vectorifyPending;
+    const stored = await chrome.storage.local.get("vectorioPending");
+    const payload = stored.vectorioPending;
     if (!payload?.imageDataUrl || !payload?.prompt) return;
 
     const response = await fetch(payload.imageDataUrl);
     if (!response.ok) throw new Error("Could not read the selected image.");
     const blob = await response.blob();
-    const file = new File([blob], payload.fileName || "vectorify-source.png", {
+    const file = new File([blob], payload.fileName || "vectorio-source.png", {
       type: payload.mimeType || blob.type || "image/png"
     });
 
@@ -75,11 +75,11 @@ async function fillGemini() {
       editor.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: payload.prompt }));
     }
     // Leave final submission to the user. Gemini's UI may change, so never auto-click Generate.
-    await chrome.storage.local.remove("vectorifyPending");
+    await chrome.storage.local.remove("vectorioPending");
     showNotice("Your image and prompt have been sent to Gemini. Please review them and click Generate when ready.");
   } catch (error) {
-    console.error("Vectorify → Gemini:", error);
-    showNotice("Vectorify could not automatically attach the image. Please use Gemini's Upload & tools → Upload files, then check the prompt. " + (error?.message || ""));
+    console.error("Vectorio AI → Gemini:", error);
+    showNotice("Vectorio AI could not automatically attach the image. Please use Gemini's Upload & tools → Upload files, then check the prompt. " + (error?.message || ""));
   } finally {
     filling = false;
   }
