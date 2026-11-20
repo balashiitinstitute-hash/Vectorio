@@ -116,10 +116,14 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="site-width pt-12 text-center md:pt-[68px]">
-        <div className="eyebrow"><Sparkles size={14}/> IMAGE-TO-PROMPT WORKSPACE</div>
-        <h1 className="hero-title mx-auto mt-5 max-w-[780px]">Give your image a <span>vector-style direction.</span></h1>
-        <p className="hero-copy mx-auto mt-4 max-w-[620px]">Upload your artwork, choose a style, and get a carefully tailored prompt ready to use with Gemini.</p>
+      <section className="hero-showcase">
+        <div className="hero-decoration hero-decoration-left" aria-hidden="true"><span className="grid-square square-one"/><span className="grid-square square-two"/><span className="grid-cross cross-one">+</span><span className="grid-cross cross-two">+</span><span className="grid-dot dot-one"/><span className="grid-dot dot-two"/></div>
+        <div className="hero-decoration hero-decoration-right" aria-hidden="true"><span className="grid-square square-one"/><span className="grid-square square-two"/><span className="grid-cross cross-one">+</span><span className="grid-cross cross-two">+</span><span className="grid-dot dot-one"/><span className="grid-dot dot-two"/></div>
+        <div className="hero-content">
+          <div className="eyebrow"><Sparkles size={14}/> IMAGE-TO-PROMPT WORKSPACE</div>
+          <h1 className="hero-title">VECTORIO AI</h1>
+          <p className="hero-copy">Upload your artwork, choose a style, and get a carefully tailored prompt ready to use with Gemini.</p>
+        </div>
       </section>
 
       <section className="site-width mt-10 max-w-[1160px]">
