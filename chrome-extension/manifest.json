@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Vectorio AI – Gemini Assistant",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Send images and prompts from Vectorio AI to Gemini.",
   "permissions": [
     "storage",
     "tabs",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "scripting"
   ],
   "host_permissions": [
     "https://vectorio-ai.vercel.app/*",
