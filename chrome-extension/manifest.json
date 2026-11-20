@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Vectorio AI → Gemini",
-  "version": "1.3.0",
-  "description": "Sends your selected Vectorio AI image and prompt to Gemini.",
+  "name": "Vectorio AI – Gemini Assistant",
+  "version": "2.0.1",
+  "description": "Send images and prompts from Vectorio AI to Gemini.",
   "permissions": [
     "storage",
     "tabs",
@@ -10,7 +10,6 @@
   ],
   "host_permissions": [
     "https://vectorio-ai.vercel.app/*",
-    "https://vectorify-ai.vercel.app/*",
     "https://gemini.google.com/*"
   ],
   "background": {
@@ -19,11 +18,10 @@
   "content_scripts": [
     {
       "matches": [
-        "https://vectorio-ai.vercel.app/*",
-        "https://vectorify-ai.vercel.app/*"
+        "https://vectorio-ai.vercel.app/*"
       ],
       "js": [
-        "vectorify.js"
+        "vectorio.js"
       ],
       "run_at": "document_idle"
     },
