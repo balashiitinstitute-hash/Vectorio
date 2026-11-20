@@ -173,3 +173,45 @@ main.min-h-screen { background: #f0f2f5 !important; }
   .hero-showcase .hero-decoration { width: 18vw !important; opacity: .35; background-size: 36px 36px !important; }
   body h1.hero-title, .hero-showcase h1.hero-title { font-size: clamp(48px, 13vw, 70px); }
 }
+
+
+/* User-selected lime identity accent sampled from reference image: #DFFF01 */
+:root { --accent: #DFFF01; --accent-ink: #171b24; }
+.brand-mark {
+  color: #171b24 !important;
+  background: #DFFF01 !important;
+  box-shadow: 0 2px 8px rgba(223,255,1,.18);
+}
+.brand-ai { color: #171b24 !important; }
+.eyebrow {
+  border-color: rgba(223,255,1,.72) !important;
+  color: #343b20 !important;
+  background: #f8ffd9 !important;
+}
+.step-number {
+  border-color: #e7f59a !important;
+  color: #303719 !important;
+  background: #f8ffd9 !important;
+}
+.style-option-active {
+  border-color: #c5e600 !important;
+  background: #fbffeb !important;
+  box-shadow: 0 0 0 2px rgba(223,255,1,.22) !important;
+}
+.style-option-active .style-radio { border-color: #8ba000 !important; }
+.style-option-active .style-radio span { background: #8ba000 !important; }
+.style-option-active .style-icon {
+  color: #303719 !important;
+  background: #efffa1 !important;
+}
+.upload-icon {
+  border-color: #e7f59a !important;
+  color: #303719 !important;
+}
+.upload-icon svg { color: #303719 !important; }
+.topbar-tag {
+  border-color: #e7f59a !important;
+  background: #fbffeb !important;
+  color: #48521d !important;
+}
+::selection { color: #171b24; background: #DFFF01 !important; }
