@@ -80,7 +80,6 @@ export default function Home() {
         reader.onerror = () => reject(new Error("Could not read image."));
         reader.readAsDataURL(file);
       });
-      const response = await fetch("/api/extension-status").catch(() => null);
       window.postMessage({
         type: "VECTORIO_SEND_TO_GEMINI",
         imageDataUrl,
