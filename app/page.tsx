@@ -101,7 +101,7 @@ export default function Home() {
   const selectedStyle = styles.find(style => style.id === type);
 
   return (
-    <main className="min-h-screen bg-white pb-16">
+    <main className="min-h-screen pb-16">
       <header className="topbar">
         <div className="site-width flex h-[76px] items-center justify-between">
           <a href="/" className="brand-lockup" aria-label="Vectorio AI home">
