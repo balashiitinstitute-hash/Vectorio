@@ -54,23 +54,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       try {
         await chrome.tabs.sendMessage(tab.id, { type: "VECTORIO_FILL_GEMINI" });
-      } catch {
-        // Wait for the content script to be ready in the existing tab; never open another tab.
-        await new Promise(resolve => {
-          let finished = false;
-          const done = () => {
-            if (finished) return;
-            finished = true;
-            chrome.tabs.onUpdated.removeListener(listener);
-            clearTimeout(timeout);
-            resolve();
-          };
-          const listener = (updatedTabId, info) => {
-            if (updatedTabId === tab.id && info.status === "complete") done();
-          };
-          const timeout = setTimeout(done, 5000);
-          chrome.tabs.onUpdated.addListener(listener);
+      } catch (firstError) {
+        // Existing Gemini tabs may have been open before the extension was installed/reloaded.
+        // Inject the extension content script into that same tab, then retry. Never create a tab.
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ["gemini.js"]
         });
+        await new Promise(resolve => setTimeout(resolve, 250));
         await chrome.tabs.sendMessage(tab.id, { type: "VECTORIO_FILL_GEMINI" });
       }
       sendResponse({ ok: true, reusedExistingTab: true, tabId: tab.id });
