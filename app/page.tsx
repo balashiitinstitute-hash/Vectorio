@@ -71,7 +71,7 @@ export default function Home() {
         reader.onerror = () => reject(new Error("Could not read image."));
         reader.readAsDataURL(file);
       });
-      window.postMessage({ type: "VECTORIFY_SEND_TO_GEMINI", imageDataUrl, fileName: file.name, mimeType: file.type, prompt }, window.location.origin);
+      window.postMessage({ type: "VECTORIO_SEND_TO_GEMINI", imageDataUrl, fileName: file.name, mimeType: file.type, prompt }, window.location.origin);
       setGeminiStatus("Sending image and prompt to Gemini… If nothing happens, install and enable the Vectorio Chrome Extension.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not send to Gemini.");
@@ -81,8 +81,8 @@ export default function Home() {
   useEffect(() => {
     const onExtensionMessage = (event: MessageEvent) => {
       if (event.source !== window || event.origin !== window.location.origin) return;
-      if (event.data?.type === "VECTORIFY_EXTENSION_SENT") setGeminiStatus("Gemini opened. The extension is preparing your image and prompt.");
-      if (event.data?.type === "VECTORIFY_EXTENSION_ERROR") setError(event.data.error || "Chrome extension could not open Gemini.");
+      if (event.data?.type === "VECTORIO_EXTENSION_SENT") setGeminiStatus("Gemini opened. The extension is preparing your image and prompt.");
+      if (event.data?.type === "VECTORIO_EXTENSION_ERROR") setError(event.data.error || "Chrome extension could not open Gemini.");
     };
     window.addEventListener("message", onExtensionMessage);
     return () => window.removeEventListener("message", onExtensionMessage);
