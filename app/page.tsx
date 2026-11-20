@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Clipboard, ExternalLink, ImagePlus, Loader2, Sparkles, UploadCloud, X } from "lucide-react";
+import { ArrowRight, Check, Clipboard, ExternalLink, ImagePlus, Loader2, RefreshCw, Sparkles, UploadCloud, X, WandSparkles } from "lucide-react";
 
 type VectorType = "vector-illustration" | "black-white" | "line-drawing";
-const styles: { id: VectorType; title: string; description: string }[] = [
-  { id: "vector-illustration", title: "Vector Illustration", description: "Clean shapes and polished colors" },
-  { id: "black-white", title: "Black & White", description: "High-contrast monochrome artwork" },
-  { id: "line-drawing", title: "Line Drawing", description: "Crisp outlines and fine details" }
+const styles: { id: VectorType; title: string; description: string; detail: string }[] = [
+  { id: "vector-illustration", title: "Vector Illustration", description: "Clean shapes and polished colors", detail: "COLOR" },
+  { id: "black-white", title: "Black & White", description: "High-contrast laser engraving style", detail: "B&W" },
+  { id: "line-drawing", title: "Line Drawing", description: "Crisp outlines and fine details", detail: "LINES" }
 ];
 
 export default function Home() {
@@ -40,6 +40,7 @@ export default function Home() {
     setPreview(URL.createObjectURL(next));
     setPrompt("");
     setError("");
+    setGeminiStatus("");
   }
 
   async function generatePrompt() {
@@ -93,50 +94,118 @@ export default function Home() {
   }
 
   function reset() {
-    setFile(null); setPreview(""); setPrompt(""); setError("");
+    setFile(null); setPreview(""); setPrompt(""); setError(""); setGeminiStatus("");
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  const selectedStyle = styles.find(style => style.id === type);
+
   return (
-    <main className="min-h-screen pb-16">
-      <header className="shell flex h-20 items-center justify-between">
-        <a href="/" className="flex items-center gap-2 text-xl font-black tracking-tight"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#7357e8] text-white"><Sparkles size={19}/></span>vectorify<span className="text-[#7357e8]">.ai</span></a>
-        <span className="rounded-full border border-[#e8e3f5] bg-white px-4 py-2 text-xs font-semibold text-[#6f55d9]">AI PROMPT GENERATOR</span>
+    <main className="min-h-screen bg-white pb-16">
+      <header className="topbar">
+        <div className="site-width flex h-[76px] items-center justify-between">
+          <a href="/" className="brand-lockup" aria-label="Vectorio AI home">
+            <span className="brand-mark"><WandSparkles size={20} strokeWidth={2.2}/></span>
+            <span>Vectorio<span className="brand-ai"> AI</span></span>
+          </a>
+          <div className="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
+            <span className="status-dot"></span>
+            AI prompt workspace
+          </div>
+          <span className="topbar-tag">BETA</span>
+        </div>
       </header>
 
-      <section className="shell pt-12 text-center md:pt-16">
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#e8e2fb] bg-white px-4 py-2 text-xs font-semibold text-[#7257df]"><Sparkles size={14}/> Image-aware prompts · Free Gemini text/vision tier</div>
-        <h1 className="mx-auto max-w-3xl text-4xl font-black leading-tight tracking-tight md:text-6xl">Turn images into <span className="text-[#7357e8]">better prompts.</span></h1>
-        <p className="muted mx-auto mt-5 max-w-xl text-base leading-7">Upload an image, choose a service, and get a tailored prompt that describes the exact image and the transformation you want.</p>
+      <section className="site-width pt-12 text-center md:pt-[68px]">
+        <div className="eyebrow"><Sparkles size={14}/> IMAGE-TO-PROMPT WORKSPACE</div>
+        <h1 className="hero-title mx-auto mt-5 max-w-[780px]">Give your image a <span>vector-style direction.</span></h1>
+        <p className="hero-copy mx-auto mt-4 max-w-[620px]">Upload your artwork, choose a style, and get a carefully tailored prompt ready to use with Gemini.</p>
       </section>
 
-      <section className="shell mt-12 grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <div className="panel p-5 md:p-7">
-          <div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-bold">01. Upload image</h2><p className="muted mt-1 text-sm">PNG, JPG or WEBP · Up to 10 MB</p></div>{file && <button onClick={reset} className="secondary flex items-center gap-2 text-sm"><X size={15}/> Clear</button>}</div>
-          <div onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();chooseImage(e.dataTransfer.files?.[0]);}} onClick={()=>inputRef.current?.click()} className="flex min-h-[310px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#dcd5f1] bg-[#faf9ff] p-5 text-center hover:border-[#8d78e8]">
-            {preview ? <img src={preview} alt="Uploaded image preview" className="max-h-[285px] max-w-full rounded-xl object-contain"/> : <><div className="mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-[#eee9ff] text-[#7357e8]"><UploadCloud size={30}/></div><p className="font-bold">Drop your image here</p><p className="muted mt-2 text-sm">or click to browse files</p><span className="mt-5 rounded-xl bg-white px-4 py-2 text-sm font-semibold shadow-sm"><ImagePlus className="mr-2 inline" size={16}/> Choose image</span></>}
+      <section className="site-width mt-10 max-w-[1160px]">
+        <div className="workspace">
+          <div className="workspace-heading">
+            <div>
+              <div className="step-kicker">YOUR WORKSPACE</div>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">Prepare your image</h2>
+              <p className="mt-1 text-sm text-slate-500">A simple workflow from source image to a ready-to-use prompt.</p>
+            </div>
+            {file && <button onClick={reset} className="text-button"><X size={15}/> Clear image</button>}
           </div>
-          <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e=>chooseImage(e.target.files?.[0])}/>
-          <p className="muted mt-3 text-xs">You can also paste an image from your clipboard (Ctrl + V) while this page is active.</p>
-        </div>
 
-        <div className="panel p-5 md:p-7">
-          <h2 className="text-lg font-bold">02. Choose service</h2><p className="muted mt-1 text-sm">Select the transformation prompt you need.</p>
-          <div className="mt-5 space-y-3">{styles.map(s=><button key={s.id} onClick={()=>{setType(s.id);setPrompt("");setError("");}} className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left transition ${type===s.id?"border-[#8c77e9] bg-[#f6f3ff]":"border-[#eceaf3] bg-white hover:border-[#c9c0e9]"}`}><span><span className="block font-bold">{s.title}</span><span className="muted mt-1 block text-sm">{s.description}</span></span><span className={`grid h-6 w-6 place-items-center rounded-full border ${type===s.id?"border-[#7357e8] bg-[#7357e8] text-white":"border-[#ddd9e8]"}`}>{type===s.id&&<Check size={14}/>}</span></button>)}</div>
-          <button disabled={!file || generating} onClick={generatePrompt} className="primary mt-6 flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50">{generating?<><Loader2 size={18} className="animate-spin"/> Analyzing image…</>:<><Sparkles size={18}/> Generate prompt <ArrowRight size={17}/></>}</button>
-          {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+          <div className="workspace-grid">
+            <div className="upload-column">
+              <div className="section-label"><span className="step-number">1</span><div><h3>Upload image</h3><p>Start with a PNG, JPG or WEBP file</p></div></div>
+              <div
+                onDragOver={event => event.preventDefault()}
+                onDrop={event => { event.preventDefault(); chooseImage(event.dataTransfer.files?.[0]); }}
+                onClick={() => inputRef.current?.click()}
+                className={"upload-zone " + (preview ? "upload-zone-filled" : "")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={event => { if (event.key === "Enter" || event.key === " ") inputRef.current?.click(); }}
+                aria-label="Upload an image"
+              >
+                {preview ? (
+                  <div className="preview-wrap">
+                    <img src={preview} alt="Uploaded image preview" className="image-preview"/>
+                    <div className="preview-overlay"><span><RefreshCw size={14}/> Replace image</span></div>
+                  </div>
+                ) : (
+                  <div className="upload-empty">
+                    <div className="upload-icon"><UploadCloud size={27} strokeWidth={1.7}/></div>
+                    <p className="mt-4 text-[15px] font-semibold text-slate-800">Drop your image here</p>
+                    <p className="mt-1 text-sm text-slate-500">or <span className="font-semibold text-slate-800 underline underline-offset-4">browse files</span></p>
+                    <div className="upload-meta"><span>PNG</span><span>JPG</span><span>WEBP</span><span>MAX 10 MB</span></div>
+                  </div>
+                )}
+              </div>
+              <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={event => chooseImage(event.target.files?.[0])}/>
+              <div className="upload-footnote"><ImagePlus size={14}/> You can also paste an image with Ctrl + V.</div>
+              {file && <div className="file-chip"><Check size={14}/><span className="truncate">{file.name}</span><span className="file-size">{(file.size / (1024 * 1024)).toFixed(2)} MB</span></div>}
+            </div>
+
+            <div className="settings-column">
+              <div className="section-label"><span className="step-number">2</span><div><h3>Choose a style</h3><p>Select the output direction for your prompt</p></div></div>
+              <div className="style-list">
+                {styles.map((style, index) => (
+                  <button key={style.id} onClick={() => { setType(style.id); setPrompt(""); setError(""); }} className={"style-option " + (type === style.id ? "style-option-active" : "")} aria-pressed={type === style.id}>
+                    <span className={"style-icon style-icon-" + index}>{index === 0 ? <Sparkles size={18}/> : index === 1 ? <span className="bw-icon">B/W</span> : <span className="line-icon"><span></span><span></span><span></span></span>}</span>
+                    <span className="min-w-0 flex-1 text-left"><span className="block text-sm font-semibold text-slate-900">{style.title}</span><span className="mt-1 block text-xs text-slate-500">{style.description}</span></span>
+                    <span className="style-radio">{type === style.id && <span/>}</span>
+                  </button>
+                ))}
+              </div>
+              <button disabled={!file || generating} onClick={generatePrompt} className="generate-button mt-5 flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-40">
+                {generating ? <><Loader2 size={17} className="animate-spin"/> Analyzing image…</> : <><Sparkles size={17}/> Generate prompt <ArrowRight size={16}/></>}
+              </button>
+              <p className="mt-3 text-center text-[11px] leading-5 text-slate-400">Your image is analyzed to create a prompt. Vectorio AI does not generate the final artwork.</p>
+            </div>
+          </div>
+          {error && <p role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
         </div>
       </section>
 
-      {prompt && <section className="shell mt-6"><div className="panel p-5 md:p-7">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold">03. Your image-specific prompt</h2><p className="muted mt-1 text-sm">Generated from your uploaded image and selected service.</p></div><span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">Prompt ready</span></div>
-        <textarea readOnly value={prompt} className="min-h-[220px] w-full resize-y rounded-xl border border-[#e7e2f0] bg-[#faf9ff] p-4 text-sm leading-7 text-[#49465b] outline-none"/>
-        <div className="mt-4 flex flex-wrap gap-3"><button onClick={copyPrompt} className="primary flex items-center justify-center gap-2"><Clipboard size={16}/>{copied?"Copied!":"Copy prompt"}</button><button onClick={openGeminiWithImage} disabled={sendingToGemini} className="secondary flex items-center justify-center gap-2 disabled:opacity-50">{sendingToGemini ? <Loader2 size={16} className="animate-spin"/> : <ExternalLink size={16}/>} {sendingToGemini ? "Opening Gemini…" : "Open Gemini with image + prompt"}</button><button onClick={generatePrompt} disabled={generating} className="secondary flex items-center gap-2"><Sparkles size={16}/> Regenerate prompt</button></div>
-        {geminiStatus && <p className="mt-4 rounded-xl bg-[#f2efff] p-3 text-sm text-[#5e4bb0]">{geminiStatus}</p>}
-        <p className="muted mt-4 text-xs">With the optional Vectorify Chrome Extension installed, this sends your original image and prompt to Gemini. You still review the setup and click Generate yourself.</p>
-      </div></section>}
+      {prompt && <section className="site-width mt-6 max-w-[1160px]">
+        <div className="result-panel">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3"><span className="result-check"><Check size={17}/></span><div><div className="step-kicker">STEP 3 · READY TO USE</div><h2 className="mt-1 text-lg font-semibold text-slate-900">Your image-specific prompt</h2><p className="mt-1 text-sm text-slate-500">Created for {selectedStyle?.title || "your selected style"}.</p></div></div>
+            <span className="ready-tag">Prompt ready</span>
+          </div>
+          <textarea readOnly value={prompt} className="prompt-output mt-5 min-h-[220px] w-full resize-y" aria-label="Generated prompt"/>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button onClick={copyPrompt} className="action-primary flex items-center justify-center gap-2"><Clipboard size={16}/>{copied ? "Copied!" : "Copy prompt"}</button>
+            <button onClick={openGeminiWithImage} disabled={sendingToGemini} className="action-secondary flex items-center justify-center gap-2 disabled:opacity-50">{sendingToGemini ? <Loader2 size={16} className="animate-spin"/> : <ExternalLink size={16}/>} {sendingToGemini ? "Opening Gemini…" : "Open Gemini with image + prompt"}</button>
+            <button onClick={generatePrompt} disabled={generating} className="action-quiet flex items-center gap-2"><RefreshCw size={15}/> Regenerate</button>
+          </div>
+          {geminiStatus && <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">{geminiStatus}</p>}
+          <p className="mt-4 text-xs leading-5 text-slate-400">The Vectorio Chrome Extension can send your original image and prompt to Gemini. Review them there and click Generate yourself.</p>
+        </div>
+      </section>}
 
-      <footer className="shell mt-16 border-t border-[#eceaf3] pt-6 text-center text-xs text-[#9290a0]">Vectorify AI · Image-aware prompt generator · PNG/JPG/WEBP input · No generated-result import.</footer>
+      <footer className="site-width mt-16 border-t border-slate-100 pt-6 text-center text-xs text-slate-400">
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1"><span className="font-semibold text-slate-600">Vectorio AI</span><span>·</span><span>Image-aware prompt generator</span><span>·</span><span>Made for creative workflows</span></div>
+      </footer>
     </main>
   );
 }
