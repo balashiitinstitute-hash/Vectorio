@@ -76,4 +76,3 @@ Write the final prompt as clear instructions to edit the uploaded image itself, 
     return NextResponse.json({ error: status === 429 ? "Gemini free-tier quota is temporarily exhausted. Please retry later." : message }, { status });
   }
 }
-`;
