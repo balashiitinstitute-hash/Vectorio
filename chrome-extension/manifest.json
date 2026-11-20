@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Vectorify AI → Gemini",
-  "version": "1.2.0",
-  "description": "Sends your selected Vectorify image and prompt to Gemini so you only need to click Generate.",
+  "name": "Vectorio AI → Gemini",
+  "version": "1.3.0",
+  "description": "Sends your selected Vectorio AI image and prompt to Gemini.",
   "permissions": [
     "storage",
     "tabs",
     "unlimitedStorage"
   ],
   "host_permissions": [
+    "https://vectorio-ai.vercel.app/*",
     "https://vectorify-ai.vercel.app/*",
     "https://gemini.google.com/*"
   ],
@@ -18,6 +19,7 @@
   "content_scripts": [
     {
       "matches": [
+        "https://vectorio-ai.vercel.app/*",
         "https://vectorify-ai.vercel.app/*"
       ],
       "js": [
