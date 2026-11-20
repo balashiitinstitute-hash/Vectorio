@@ -103,7 +103,8 @@ export default function Home() {
     if (!file || !prompt) return;
     setError("");
     setGeminiStatus("");
-    setTargetDialog(true);
+    if (target === "ask") setTargetDialog(true);
+    else await transferToGemini(target);
   }
 
   async function transferToGemini(choice: "web" | "app") {
@@ -194,7 +195,7 @@ export default function Home() {
             <select className="mt-2 w-full rounded-lg border border-slate-200 bg-white p-3 font-normal" value={target} onChange={e => saveSettings(device, e.target.value as typeof target)}>
               <option value="ask">Ask every time</option><option value="web">Gemini Web</option><option value="app">Gemini Android App</option>
             </select>
-            <span className="mt-1 block text-xs font-normal text-slate-500">Auto Generate is always disabled.</span>
+            <span className="mt-1 block text-xs font-normal text-slate-500">Auto Generate is always disabled. If Install App is not shown, use your browser menu → Install app / Add to Home screen.</span>
           </label>
         </div>
       </div></section>}
