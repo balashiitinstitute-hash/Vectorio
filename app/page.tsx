@@ -127,6 +127,7 @@ export default function Home() {
         await navigator.share(shareData);
         setGeminiStatus("Share sheet opened. Select Gemini. Review the image and prompt there, then tap Generate yourself.");
       } else {
+        const geminiTab = window.open("https://gemini.google.com/app", "_blank");
         await navigator.clipboard.writeText(prompt).catch(() => {});
         const imageUrl = URL.createObjectURL(file);
         const link = document.createElement("a");
@@ -136,8 +137,8 @@ export default function Home() {
         link.click();
         link.remove();
         window.setTimeout(() => URL.revokeObjectURL(imageUrl), 10000);
-        window.open("https://gemini.google.com/app", "_blank", "noopener,noreferrer");
-        setGeminiStatus("Gemini Web opened in a new tab. Your prompt was copied and the original image was downloaded. Attach that image in Gemini, then paste the prompt and click Generate.");
+        if (!geminiTab) setGeminiStatus("Your browser blocked the Gemini tab. Allow pop-ups for Vectorio AI, then try again.");
+        else setGeminiStatus("Gemini Web opened. Your prompt was copied and the original image was downloaded. Attach that image in Gemini, then paste the prompt and click Generate.");
       }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
