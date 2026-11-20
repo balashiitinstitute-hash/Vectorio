@@ -215,3 +215,39 @@ main.min-h-screen { background: #f0f2f5 !important; }
   color: #48521d !important;
 }
 ::selection { color: #171b24; background: #DFFF01 !important; }
+
+
+/* Remove remaining blue/purple service icon treatments */
+.style-icon,
+.style-icon-0,
+.style-icon-1,
+.style-icon-2 {
+  color: #171b24 !important;
+  background: #DFFF01 !important;
+}
+.style-option:hover:not(.style-option-active) {
+  border-color: #c5e600 !important;
+  background: #fcffef !important;
+}
+.style-option:focus-visible {
+  outline: 2px solid #b8d900 !important;
+  outline-offset: 2px;
+}
+.style-option-active {
+  border-color: #b8d900 !important;
+  background: #fbffeb !important;
+  box-shadow: 0 0 0 2px rgba(223,255,1,.25) !important;
+}
+.style-option-active .style-icon,
+.style-option-active .style-icon-0,
+.style-option-active .style-icon-1,
+.style-option-active .style-icon-2 {
+  color: #171b24 !important;
+  background: #DFFF01 !important;
+}
+.style-option-active .style-radio {
+  border-color: #849900 !important;
+}
+.style-option-active .style-radio span {
+  background: #849900 !important;
+}
