@@ -72,7 +72,7 @@ export default function Home() {
         reader.readAsDataURL(file);
       });
       window.postMessage({ type: "VECTORIFY_SEND_TO_GEMINI", imageDataUrl, fileName: file.name, mimeType: file.type, prompt }, window.location.origin);
-      setGeminiStatus("Sending image and prompt to Gemini… If nothing happens, install and enable the Vectorify Chrome Extension.");
+      setGeminiStatus("Sending image and prompt to Gemini… If nothing happens, install and enable the Vectorio Chrome Extension.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not send to Gemini.");
     } finally { setSendingToGemini(false); }
