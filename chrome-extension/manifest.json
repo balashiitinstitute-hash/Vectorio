@@ -1,18 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "Vectorio AI – Gemini Assistant",
-  "version": "2.2.1",
-  "description": "Send images and prompts from Vectorio AI to Gemini.",
+  "name": "Vectorio AI – Gemini Assistant + QC",
+  "version": "2.3.0",
+  "description": "Vectorio AI Gemini assistant and automatic Dropbox completed-file QC watcher.",
   "permissions": [
     "storage",
     "tabs",
     "unlimitedStorage",
-    "scripting"
+    "scripting",
+    "identity",
+    "alarms"
   ],
   "host_permissions": [
     "https://vectorio-ai.vercel.app/*",
-    "https://gemini.google.com/*"
+    "https://gemini.google.com/*",
+    "https://api.dropboxapi.com/*",
+    "https://content.dropboxapi.com/*"
   ],
+  "action": {
+    "default_popup": "qc-popup.html",
+    "default_title": "Vectorio AI QC"
+  },
   "background": {
     "service_worker": "background.js"
   },
