@@ -1,3 +1,5 @@
+importScripts("qc-background.js");
+
 // Remember the Gemini tab the user last worked in.
 // When Vectorio sends an image, reuse that exact tab; never create a new Gemini tab.
 async function rememberGeminiTab(tabId) {
