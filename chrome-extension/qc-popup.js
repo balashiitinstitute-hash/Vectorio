@@ -4,7 +4,7 @@ function notify(message, error = false) { $("notice").textContent = message; $("
 async function send(type, extra = {}) { return chrome.runtime.sendMessage({ type, ...extra }); }
 async function load() {
   const data = await chrome.storage.local.get(["qcAppKey","qcRootPath","qcBackendUrl","qcDropboxConnected","qcMonitoring","qcQueue","qcActivity"]);
-  $("appKey").value = data.qcAppKey || "";
+  $("appKey").value = data.qcAppKey || "";\n  $("redirectUri").value = chrome.identity.getRedirectURL("dropbox");
   $("rootPath").value = data.qcRootPath || "";
   $("backendUrl").value = data.qcBackendUrl || "";
   $("connectionBadge").textContent = data.qcDropboxConnected ? "Connected" : "Not connected";
