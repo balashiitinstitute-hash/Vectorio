@@ -80,27 +80,34 @@ export default function Home() {
         reader.onerror = () => reject(new Error("Could not read image."));
         reader.readAsDataURL(file);
       });
-      window.postMessage({
-        type: "VECTORIO_SEND_TO_GEMINI",
-        imageDataUrl,
-        fileName: file.name,
-        mimeType: file.type,
-        prompt
-      }, window.location.origin);
       const result = await new Promise<{ok:boolean;error?:string}>((resolve) => {
-        const timer = window.setTimeout(() => {
+        let settled = false;
+        const finish = (value: {ok:boolean;error?:string}) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
           window.removeEventListener("message", onResult);
-          resolve({ok:false,error:"No response from Vectorio Chrome Extension. Check that the extension is installed, enabled, and allowed on this website."});
-        }, 12000);
+          resolve(value);
+        };
         function onResult(event: MessageEvent) {
           if (event.source !== window || event.origin !== window.location.origin) return;
-          if (event.data?.type === "VECTORIO_EXTENSION_SENT") {
-            clearTimeout(timer); window.removeEventListener("message", onResult); resolve({ok:true});
-          } else if (event.data?.type === "VECTORIO_EXTENSION_ERROR") {
-            clearTimeout(timer); window.removeEventListener("message", onResult); resolve({ok:false,error:event.data.error});
-          }
+          if (event.data?.type === "VECTORIO_EXTENSION_SENT") finish({ok:true});
+          else if (event.data?.type === "VECTORIO_EXTENSION_ERROR") finish({ok:false,error:event.data.error});
         }
         window.addEventListener("message", onResult);
+        const timer = window.setTimeout(() => finish({
+          ok:false,
+          error:"No response from the Vectorio Chrome Extension. Check that it is enabled and allowed on vectorio-ai.vercel.app, then reload both the extension and this website."
+        }), 12000);
+
+        // Send only after the response listener is ready to avoid missing a fast extension reply.
+        window.postMessage({
+          type: "VECTORIO_SEND_TO_GEMINI",
+          imageDataUrl,
+          fileName: file.name,
+          mimeType: file.type,
+          prompt
+        }, window.location.origin);
       });
       if (!result.ok) throw new Error(result.error || "Could not send to Gemini.");
       setGeminiStatus("Image and prompt sent to your already-open Gemini tab. Please review them and click Generate yourself.");
