@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
 
     const bytes = Buffer.from(await image.arrayBuffer());
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const result = await ai.models.generateContent({
-      model: process.env.GEMINI_VISION_MODEL || "gemini-2.5-flash-lite",
+    const model = process.env.GEMINI_VISION_MODEL || "gemini-2.5-flash-lite";
+    const request = {
+      model,
       contents: [{
         role: "user",
         parts: [
@@ -64,15 +65,37 @@ Write the final prompt as clear instructions to edit the uploaded image itself, 
         ]
       }],
       config: { responseModalities: ["TEXT"], temperature: 0.1 }
-    });
+    };
 
-    const prompt = result.text?.trim();
+    // Retry transient Gemini capacity errors with short exponential backoff.
+    // Do not retry quota/auth/validation errors.
+    let result;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        result = await ai.models.generateContent(request);
+        break;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const isOverloaded = /503|UNAVAILABLE|high demand|overload|temporarily unavailable/i.test(message);
+        if (!isOverloaded || attempt === 2) throw error;
+        await new Promise(resolve => setTimeout(resolve, 1200 * (2 ** attempt)));
+      }
+    }
+
+    const prompt = result?.text?.trim();
     if (!prompt) return NextResponse.json({ error: "The vision model did not return a prompt. Please try again." }, { status: 502 });
     return NextResponse.json({ prompt });
   } catch (error) {
     console.error("Prompt generation error:", error);
     const message = error instanceof Error ? error.message : "Unexpected prompt generation error.";
-    const status = /429|quota|rate limit/i.test(message) ? 429 : 500;
-    return NextResponse.json({ error: status === 429 ? "Gemini free-tier quota is temporarily exhausted. Please retry later." : message }, { status });
+    const isQuota = /429|quota|rate limit|resource exhausted/i.test(message);
+    const isOverloaded = /503|UNAVAILABLE|high demand|overload|temporarily unavailable/i.test(message);
+    const status = isQuota ? 429 : isOverloaded ? 503 : 500;
+    const userMessage = isQuota
+      ? "Gemini API quota or rate limit reached. Please wait and try again."
+      : isOverloaded
+        ? "Gemini is temporarily busy (503 high demand). Please wait 30–60 seconds and try again. Your uploaded image is safe; no need to upload it again."
+        : message;
+    return NextResponse.json({ error: userMessage, code: status }, { status });
   }
 }
