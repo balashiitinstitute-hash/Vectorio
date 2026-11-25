@@ -43,16 +43,68 @@ export default function Home() {
     setGeminiStatus("");
   }
 
+  // Optimize only the image used for AI prompt analysis. The original file is
+  // preserved and is still sent to Gemini by the Chrome extension.
+  async function preparePromptImage(source: File): Promise<File> {
+    const safeRequestSize = 3.7 * 1024 * 1024; // Leave room for multipart overhead under Vercel's request limit.
+    if (source.size <= safeRequestSize) return source;
+
+    const bitmap = await createImageBitmap(source);
+    try {
+      const canvas = document.createElement("canvas");
+      let scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
+      let quality = 0.86;
+
+      for (let attempt = 0; attempt < 12; attempt++) {
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Could not optimize the image in this browser.");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+        const optimized = await new Promise<Blob | null>(resolve =>
+          canvas.toBlob(resolve, "image/webp", quality)
+        );
+        if (!optimized) throw new Error("Could not compress the image. Please try a JPG or PNG.");
+
+        if (optimized.size <= safeRequestSize) {
+          return new File([optimized], "vectorio-prompt-image.webp", { type: "image/webp" });
+        }
+
+        if (quality > 0.56) quality -= 0.1;
+        else {
+          scale *= 0.78;
+          quality = 0.82;
+        }
+      }
+      throw new Error("This image could not be reduced enough for prompt analysis. Please use a smaller image.");
+    } finally {
+      bitmap.close();
+    }
+  }
+
   async function generatePrompt() {
     if (!file) return;
     setGenerating(true); setError(""); setPrompt("");
     try {
+      const promptImage = await preparePromptImage(file);
       const body = new FormData();
-      body.append("image", file);
+      body.append("image", promptImage);
       body.append("vectorType", type);
       const response = await fetch("/api/generate-prompt", { method: "POST", body });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not generate the prompt. Please try again.");
+      const responseText = await response.text();
+      let data: { prompt?: string; error?: string };
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        const detail = responseText.trim().slice(0, 220) || response.statusText || "Non-JSON server response";
+        throw new Error(`Server error (${response.status}): ${detail}`);
+      }
+      if (!response.ok) {
+        throw new Error(data.error || `Request failed (${response.status}). Please try again.`);
+      }
+      if (!data.prompt) throw new Error("The server did not return a prompt. Please try again.");
       setPrompt(data.prompt);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while generating prompt.");
