@@ -166,7 +166,7 @@ export default function Home() {
         }, window.location.origin);
       });
       if (!result.ok) throw new Error(result.error || "Could not send to Gemini.");
-      setGeminiStatus("Image and prompt sent to your already-open Gemini tab. Please review them and click Generate yourself.");
+      setGeminiStatus("Image and prompt are ready in your existing Gemini chat. Just click Submit/Generate when you're ready.");
     } catch (err) {
       setGeminiStatus("");
       setError(err instanceof Error ? err.message : "Could not send to Gemini.");
