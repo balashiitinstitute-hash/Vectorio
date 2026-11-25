@@ -106,6 +106,10 @@ export default function Home() {
       }
       if (!data.prompt) throw new Error("The server did not return a prompt. Please try again.");
       setPrompt(data.prompt);
+      // Automatically transfer the original image and completed prompt to the
+      // user's already-open Gemini tab. The user still submits manually.
+      setGeminiStatus("Prompt generated. Switching to your open Gemini chat and attaching the image…");
+      await transferToGemini(data.prompt);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unexpected error while generating prompt.");
     } finally {
@@ -117,11 +121,11 @@ export default function Home() {
     if (!file || !prompt) return;
     setError("");
     setGeminiStatus("");
-    await transferToGemini();
+    await transferToGemini(prompt);
   }
 
-  async function transferToGemini() {
-    if (!file || !prompt) return;
+  async function transferToGemini(promptToSend: string) {
+    if (!file || !promptToSend) return;
     setSendingToGemini(true);
     setError("");
     setGeminiStatus("Sending image and prompt to your open Gemini chat…");
@@ -158,7 +162,7 @@ export default function Home() {
           imageDataUrl,
           fileName: file.name,
           mimeType: file.type,
-          prompt
+          prompt: promptToSend
         }, window.location.origin);
       });
       if (!result.ok) throw new Error(result.error || "Could not send to Gemini.");
@@ -288,7 +292,7 @@ export default function Home() {
             <button onClick={generatePrompt} disabled={generating} className="action-quiet flex items-center gap-2"><RefreshCw size={15}/> Regenerate</button>
           </div>
           {geminiStatus && <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">{geminiStatus}</p>}
-          <p className="mt-4 text-xs leading-5 text-slate-400">Keep a Gemini New Chat open in Chrome, then send your image and prompt directly from here. Click Generate yourself.</p>
+          <p className="mt-4 text-xs leading-5 text-slate-400">Keep a Gemini New Chat open in Chrome. After prompt generation, Vectorio AI automatically switches to that tab and fills in the image and prompt. You only need to click Submit/Generate.</p>
         </div>
       </section>}
 
